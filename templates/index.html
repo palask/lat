@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalAreaText</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        #textbox {
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        #status {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>LAT - LocalAreaText</h1>
+    <textarea id="textbox" rows="10"></textarea>
+    <p id="status"></p>
+    <!-- TODO: Buttons for copy & delete all -->
+
+    <script>
+        const socket = io();
+        const textbox = document.getElementById('textbox');
+        const status = document.getElementById('status');
+
+        // Fetch the existing text from the server when the page loads
+        fetch('/get_text')
+            .then(response => response.json())
+            .then(data => {
+                textbox.value = data.text;
+            });
+
+        // Handle text input and emit to server
+        textbox.addEventListener('input', function() {
+            socket.emit('text_update', {text: textbox.value});
+        });
+
+        // Update text box with data from server
+        socket.on('update_text', function(data) {
+            textbox.value = data.text;
+        });
+
+        // Notify user if the connection is lost
+        socket.on('disconnect', function() {
+            status.textContent = 'Connection lost. The server might be offline.';
+        });
+
+        // Clear the warning message when reconnected
+        socket.on('connect', function() {
+            status.textContent = '';
+        });
+    </script>
+</body>
+</html>
