@@ -16,23 +16,52 @@
             padding: 16px;
         }
 
+        h1 {
+            font-weight: normal;
+            margin-top: 0;
+        }
+
         #textbox {
             box-sizing: border-box;
             flex: 1;
             width: 100%;
         }
 
-        #status {
+        .flex-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        #controls {
+            justify-content: center;
+            margin: 8px 0;
+        }
+
+        button {
+            padding: 8px;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        #connectionStatus {
             color: red;
         }
     </style>
 </head>
+
 <body>
     <h1>LAT - LocalAreaText</h1>
     <textarea id="textbox"></textarea>
-    <p id="connectionStatus"></p>
-    <p id="userCount"></p>
-    <!-- TODO: Buttons for copy & delete all -->
+    <div id="controls" class="flex-row">
+        <button onclick="copyToClipboard()">Copy all</button>
+        <button onclick="clearTextbox()">Delete all</button>
+    </div>
+    <div id="infos" class="flex-row">
+        <p id="connectionStatus"></p>
+        <p id="userCount"></p>
+    </div>
 
     <script>
         const socket = io();
@@ -78,6 +107,34 @@
         socket.on('connect', function() {
             connection_status.textContent = '';
         });
+
+        function fallbackCopyTextToClipboard() {
+            textbox.focus();
+            textbox.select();
+
+            try {
+                const successfulCopy = document.execCommand('copy');
+            } catch (err) {
+                console.error('Failed to copy text with fallback method: ', err);
+            }
+        }
+
+        async function copyToClipboard() {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard();
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(textbox.value);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+
+        function clearTextbox() {
+            textbox.value = '';
+            socket.emit('text_update', {text: textbox.value});
+        }
     </script>
 </body>
 </html>
