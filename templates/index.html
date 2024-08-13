@@ -7,11 +7,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         body {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
             font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            height: 100dvh;
+            margin: 0;
+            padding: 16px;
         }
 
         #textbox {
             box-sizing: border-box;
+            flex: 1;
             width: 100%;
         }
 
@@ -22,20 +29,29 @@
 </head>
 <body>
     <h1>LAT - LocalAreaText</h1>
-    <textarea id="textbox" rows="10"></textarea>
-    <p id="status"></p>
+    <textarea id="textbox"></textarea>
+    <p id="connectionStatus"></p>
+    <p id="userCount"></p>
     <!-- TODO: Buttons for copy & delete all -->
 
     <script>
         const socket = io();
         const textbox = document.getElementById('textbox');
-        const status = document.getElementById('status');
+        const connection_status = document.getElementById('connectionStatus');
+        const user_count = document.getElementById('userCount');
 
         // Fetch the existing text from the server when the page loads
         fetch('/get_text')
             .then(response => response.json())
             .then(data => {
                 textbox.value = data.text;
+            });
+
+        // Fetch current user count from the server when the page loads
+        fetch('/get_connected_users')
+            .then(response => response.json())
+            .then(data => {
+                user_count.value = data.connected_users;
             });
 
         // Handle text input and emit to server
@@ -48,14 +64,19 @@
             textbox.value = data.text;
         });
 
+        // Update text box with data from server
+        socket.on('update_user_count', function(data) {
+            user_count.textContent = data.connected_users;
+        });
+
         // Notify user if the connection is lost
         socket.on('disconnect', function() {
-            status.textContent = 'Connection lost. The server might be offline.';
+            connection_status.textContent = 'Connection lost. The server might be offline.';
         });
 
         // Clear the warning message when reconnected
         socket.on('connect', function() {
-            status.textContent = '';
+            connection_status.textContent = '';
         });
     </script>
 </body>
