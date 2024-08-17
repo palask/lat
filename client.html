@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalAreaText</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            height: 100dvh;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: monospace;
+            font-weight: normal;
+            margin-top: 0;
+        }
+
+        #textbox {
+            align-self: center;
+            box-sizing: border-box;
+            flex: 1;
+            width: 800px;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        #controls {
+            justify-content: center;
+            margin: 8px 0;
+        }
+
+        button {
+            padding: 8px;
+        }
+
+        p {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>LAT - LocalAreaText</h1>
+    <textarea id="textbox"></textarea>
+    <div id="controls" class="flex-row">
+        <button onclick="copyToClipboard()">Copy all</button>
+        <button onclick="clearTextbox()">Delete all</button>
+    </div>
+    <p id="connectionStatus"></p>
+
+    <script defer>
+        const textbox = document.getElementById("textbox")
+        const connectionStatus = document.getElementById("connectionStatus")
+
+        let socket = null
+        let reconnectTimer = null
+
+        function createWebSocket() {
+            socket = new WebSocket("text_update")
+
+            // Update text box and user count with data from server
+            socket.onmessage = (event) => {
+                data = JSON.parse(event.data)
+                textbox.value = data.text
+                connectionStatus.textContent = data.connected_users
+            }
+
+            // Notify user if the connection is lost and try to reconnect
+            socket.onclose = (event) => {
+                if (!reconnectTimer) {
+                    connectionStatus.textContent = "Connection lost. The server might be offline."
+                    reconnectTimer = setInterval(() => {
+                        createWebSocket()
+                    }, 2500)
+                }
+            }
+
+            // Clear the warning message when reconnected
+            socket.onopen = (event) => {
+                if (reconnectTimer) {
+                    clearInterval(reconnectTimer)
+                    reconnectTimer = null
+                }
+
+                connectionStatus.textContent = ""
+            }
+        }
+
+        createWebSocket()
+
+        // Handle text input and emit to server
+        textbox.addEventListener("input", function () {
+            socket.send(JSON.stringify({ text: textbox.value }))
+        })
+
+        function fallbackCopyToClipboard() {
+            textbox.focus()
+            textbox.select()
+
+            try {
+                const successfulCopy = document.execCommand("copy")
+            } catch (err) {
+                console.error("Failed to copy text with fallback method: ", err)
+            }
+        }
+
+        async function copyToClipboard() {
+            if (!navigator.clipboard) {
+                fallbackCopyToClipboard()
+                return
+            }
+            try {
+                await navigator.clipboard.writeText(textbox.value)
+            } catch (err) {
+                console.error("Failed to copy text: ", err)
+            }
+        }
+
+        function clearTextbox() {
+            textbox.value = ""
+            socket.send(JSON.stringify({ text: textbox.value }))
+        }
+    </script>
+</body>
+
+</html>
