@@ -10,6 +10,7 @@
     "elysia": "latest"
   },
   "devDependencies": {
+    "bun-plugin-html": "^2.0.0",
     "bun-types": "latest"
   },
   "module": "server.js"

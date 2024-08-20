@@ -1,4 +1,5 @@
 import { Elysia, t } from "elysia";
+import html from "bun-plugin-html"
 
 // --- Settings ---
 // Path to the file where text will be saved
@@ -27,9 +28,16 @@ async function writeToFile(filePath: string, text: string) {
   await Bun.write(filePath, text)
 }
 
+await Bun.build({
+  entrypoints: ["client/index.html"],
+  outdir: "dist",
+  minify: true,
+  plugins: [html({ inline: true })],
+})
+
 const app = new Elysia()
 
-  .get("/", () => Bun.file("client.html"))
+  .get("/", () => Bun.file("dist/index.html"))
 
   .ws("/text_update", {
     body: t.Object({
