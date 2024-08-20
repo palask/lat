@@ -21,7 +21,10 @@ function getUpdateMessage(): UpdateMessage {
 
 async function readFromFile(filePath: string): Promise<string> {
   const f = Bun.file(filePath)
-  return f.text()
+  if (await f.exists()) {
+    return f.text()
+  }
+  return ""
 }
 
 async function writeToFile(filePath: string, text: string) {
