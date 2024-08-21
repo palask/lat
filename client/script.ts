@@ -22,6 +22,7 @@ function createWebSocket() {
 
     // Notify user if the connection is lost and try to reconnect
     socket.onclose = (event) => {
+        console.log("Socket closed")
         if (!reconnectTimer) {
             connectionStatus.textContent = "Connection lost. The server might be offline."
             reconnectTimer = setInterval(() => {
@@ -32,6 +33,7 @@ function createWebSocket() {
 
     // Clear the warning message when reconnected
     socket.onopen = (event) => {
+        console.log("Socket opened")
         if (reconnectTimer) {
             clearInterval(reconnectTimer)
             reconnectTimer = null

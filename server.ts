@@ -1,5 +1,7 @@
 import { Elysia, t } from "elysia";
 import html from "bun-plugin-html"
+import { ServerWebSocket } from "bun";
+import { ElysiaWS } from "elysia/dist/ws";
 
 // --- Settings ---
 // Path to the file where text will be saved
@@ -15,8 +17,20 @@ interface UpdateMessage {
   connected_users: string;
 }
 
+type Socket = ElysiaWS<ServerWebSocket<any>, any, any>
+
 function getUpdateMessage(): UpdateMessage {
-  return { text: currentText, connected_users: `${connectedUsers} connected users.` }
+  const connectedUsersMessage = `${connectedUsers} connected user${connectedUsers === 1 ? "" : "s"}.`;
+  return { text: currentText, connected_users: connectedUsersMessage }
+}
+
+function sendUpdateMessages(origin: Socket | null = null) {
+  const message = getUpdateMessage()
+  for (const ws of sockets) {
+    if (ws !== origin) {
+      ws.send(message)
+    }
+  }
 }
 
 async function readFromFile(filePath: string): Promise<string> {
@@ -38,6 +52,8 @@ await Bun.build({
   plugins: [html({ inline: true })],
 })
 
+let sockets: Socket[] = []
+
 const app = new Elysia()
 
   .get("/", () => Bun.file("dist/index.html"))
@@ -48,18 +64,20 @@ const app = new Elysia()
     }),
     message(ws, { text }) {
       currentText = text
+      sendUpdateMessages(ws)
       writeToFile(TEXT_FILE_PATH, currentText)
-      ws.send(getUpdateMessage())
     },
     open(ws) {
       connectedUsers++
       console.log(`User connected. Total connected users: ${connectedUsers}`)
-      ws.send(getUpdateMessage())
+      sockets.push(ws)
+      sendUpdateMessages()
     },
     close(ws) {
       connectedUsers--
       console.log(`User disconnected. Total connected users: ${connectedUsers}`)
-      ws.send(getUpdateMessage())
+      sockets = sockets.filter(e => e !== ws)
+      sendUpdateMessages()
     }
   })
 
