@@ -70,8 +70,8 @@ const app = new Elysia()
     open(ws) {
       connectedUsers++
       console.log(`User connected. Total connected users: ${connectedUsers}`)
+      sockets.push(ws)
       sendUpdateMessages()
-      sockets.push()
     },
     close(ws) {
       connectedUsers--
