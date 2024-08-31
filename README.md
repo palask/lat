@@ -12,6 +12,10 @@ Please note that LAT does not use TLS, so it is easy to deploy locally but do no
 ## Installation
 
 1. Make sure [Bun](https://bun.sh/) is installed or use [pnpm](https://pnpm.io/).
+2. Start the required packages with:
+```sh
+bun install
+```
 
 ## Usage
 
