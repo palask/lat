@@ -3,28 +3,20 @@ body {
     display: flex;
     flex-direction: column;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    height: 100dvh;
+    height: 100vh;
     margin: 0;
     padding: 16px;
     text-align: center;
 }
 
-/* Dark mode styles */
-@media (prefers-color-scheme: dark) {
+@supports (height: 100dvh) {
     body {
-        background-color: #123;
-        color: #eee;
-    }
-
-    #textbox {
-        background-color: #123;
-        border-color: #888;
-        color: #eee;
+        height: 100dvh;
     }
 }
 
 h1 {
-    font-family: monospace;
+    font-size: inherit;
     font-weight: normal;
     margin-top: 0;
 }
@@ -34,8 +26,15 @@ h1 {
     border-style: solid;
     box-sizing: border-box;
     flex: 1;
+    font-family: inherit;
     font-size: 16px;
-    width: 90dvw;
+    width: 90vw;
+}
+
+@supports (width: 90dvw) {
+    #textbox {
+        width: 90dvw;
+    }
 }
 
 .flex-row {
@@ -55,4 +54,18 @@ button {
 
 p {
     margin: 0;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #123;
+        color: #eee;
+    }
+
+    #textbox {
+        background-color: #123;
+        border-color: #888;
+        color: #eee;
+    }
 }

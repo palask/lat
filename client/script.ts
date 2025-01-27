@@ -7,11 +7,13 @@ let reconnectTimer: Timer | null = null
 function createWebSocket() {
     // If there is an existing socket, close it before creating a new one
     if (socket) {
-        socket.onclose = null; // Prevent triggering the onclose handler
-        socket.close();
+        socket.onclose = null // Prevent triggering the onclose handler
+        socket.close()
     }
 
-    socket = new WebSocket("text_update")
+    const socketUrl = new URL("text_update", window.location.href)
+    socketUrl.protocol = socketUrl.protocol.replace("http", "ws")
+    socket = new WebSocket(socketUrl)
 
     // Update text box and user count with data from server
     socket.onmessage = (event) => {
@@ -80,7 +82,7 @@ async function copyToClipboard() {
 function clearTextbox() {
     if (!socket) {
         console.error("No open socket")
-        return;
+        return
     }
     textbox.value = ""
     socket.send(JSON.stringify({ text: textbox.value }))
