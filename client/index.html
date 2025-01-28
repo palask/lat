@@ -9,14 +9,18 @@
 </head>
 
 <body>
-    <h1>LAT - LocalAreaText</h1>
-    <textarea id="textbox"></textarea>
-    <div id="controls" class="flex-row">
-        <button onclick="copyToClipboard()">Copy all</button>
-        <button onclick="clearTextbox()">Delete all</button>
-    </div>
-    <p id="connectionStatus"></p>
-
+    <main>
+        <div class="flex-row-multiple">
+            <h1>LAT - LocalAreaText</h1>
+            <p id="connectionStatus"></p>
+        </div>
+        <textarea id="inputbox" class="textbox" autofocus spellcheck="false"></textarea>
+        <div id="previewbox" class="textbox" hidden></div>
+        <div class="flex-row-single">
+            <input type="checkbox" id="edit-toggle" checked>
+            <label for="edit-toggle">Edit</label>
+        </div>
+    </main>
     <script src="script.ts" defer></script>
 </body>
 

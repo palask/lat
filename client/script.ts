@@ -1,5 +1,7 @@
-const textbox = document.getElementById("textbox")! as HTMLTextAreaElement
+const inputbox = document.getElementById("inputbox")! as HTMLTextAreaElement
+const previewbox = document.getElementById("previewbox")! as HTMLDivElement
 const connectionStatus = document.getElementById("connectionStatus")!
+const checkbox = document.getElementById("edit-toggle")! as HTMLInputElement
 
 let socket: WebSocket | null = null
 let reconnectTimer: Timer | null = null
@@ -18,7 +20,8 @@ function createWebSocket() {
     // Update text box and user count with data from server
     socket.onmessage = (event) => {
         let data = JSON.parse(event.data)
-        textbox.value = data.text
+        inputbox.value = data.text
+        previewbox.innerText = data.text
         connectionStatus.textContent = data.connected_users
     }
 
@@ -48,42 +51,24 @@ function createWebSocket() {
 createWebSocket()
 
 // Handle text input and emit to server
-textbox.addEventListener("input", function () {
+inputbox.addEventListener("input", function () {
     if (!socket) {
         console.error("No open socket")
         return;
     }
-    socket.send(JSON.stringify({ text: textbox.value }))
+    socket.send(JSON.stringify({ text: inputbox.value }))
 })
 
-function fallbackCopyToClipboard() {
-    textbox.focus()
-    textbox.select()
-
-    try {
-        const successfulCopy = document.execCommand("copy")
-    } catch (err) {
-        console.error("Failed to copy text with fallback method: ", err)
-    }
+function configureInputbox() {
+    inputbox.readOnly = !checkbox.checked
+    inputbox.hidden = !checkbox.checked
+    previewbox.hidden = checkbox.checked
 }
 
-async function copyToClipboard() {
-    if (!navigator.clipboard) {
-        fallbackCopyToClipboard()
-        return
-    }
-    try {
-        await navigator.clipboard.writeText(textbox.value)
-    } catch (err) {
-        console.error("Failed to copy text: ", err)
-    }
-}
+// Handle edit checkbox toggle on page load
+configureInputbox()
 
-function clearTextbox() {
-    if (!socket) {
-        console.error("No open socket")
-        return
-    }
-    textbox.value = ""
-    socket.send(JSON.stringify({ text: textbox.value }))
-}
+// Handle edit checkbox toggle
+checkbox.addEventListener("change", function () {
+    configureInputbox()
+})
