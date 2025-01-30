@@ -45,6 +45,7 @@ h1 {
 }
 
 .flex-row-single {
+    align-items: end;
     display: flex;
     justify-content: center;
 }
